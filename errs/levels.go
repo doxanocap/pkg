@@ -2,7 +2,6 @@ package errs
 
 import (
 	"errors"
-	"fmt"
 )
 
 type CustomError interface {
@@ -60,9 +59,7 @@ func (e *levelErr) New(input interface{}) CustomError {
 }
 
 func (e *levelErr) Wrap(message string) CustomError {
-	fmt.Println(e.getMsg())
 	e.constructMsg(message + ": " + e.getMsg())
-
 	return e
 }
 
