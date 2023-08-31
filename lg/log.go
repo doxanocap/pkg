@@ -2,9 +2,9 @@ package lg
 
 import (
 	"fmt"
+	"github.com/doxanocap/pkg/lg/internal"
 	"log"
 	"os"
-	"pkg/lg/internal"
 )
 
 type mode bool
