@@ -1,14 +1,16 @@
-package internal
+package lg
 
 import (
 	"encoding/json"
 )
 
 type LogMsg struct {
-	Level   string
-	Host    string
-	Message string
-	Payload string
+	Time    string `json:"time"`
+	Level   string `json:"level"`
+	Host    string `json:"host"`
+	File    string `json:"file"`
+	Line    int    `json:"line"`
+	Message string `json:"message"`
 }
 
 func Marshal(logMsg *LogMsg) string {

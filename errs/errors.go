@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var divider = "->"
+var divider = ": "
 
 type err struct {
 	s string
@@ -20,7 +20,7 @@ func New(text string) error {
 }
 
 func Wrap(msg string, err error) error {
-	return fmt.Errorf("%s %s %s", msg, divider, err.Error())
+	return fmt.Errorf("%s%s%s", msg, divider, err.Error())
 }
 
 func Unwrap(err error) string {

@@ -2,91 +2,95 @@ package lg
 
 import (
 	"fmt"
-	"github.com/doxanocap/pkg/lg/internal"
+	"github.com/doxanocap/pkg/errs"
 	"log"
 	"os"
+	"time"
 )
 
-type mode bool
+const (
+	levelINFO  = "INFO"
+	levelERROR = "ERROR"
+	levelWARN  = "WARN"
+	levelFATAL = "FATAL"
+)
 
 // Global
 var (
-	Mode mode = Regular
-	l         = log.New(os.Stderr, "", log.LstdFlags)
+	timeFormat = time.RFC3339
+	global     = log.New(os.Stderr, "", log.Lmsgprefix)
 )
 
-// Global
-const (
-	Tracing mode = true
-	Regular mode = false
-)
-
-// Log with log level
+// Log Logging with custom log level
 func Log(level, msg string) {
-	l.Println(internal.Marshal(&internal.LogMsg{
+	call := CallInfo(2)
+	stringifierLogMsg := Marshal(&LogMsg{
+		Time:    time.Now().Format(timeFormat),
 		Level:   level,
-		Host:    internal.GetHost(),
+		Host:    GetHost(),
+		File:    call.FileName,
+		Line:    call.Line,
 		Message: msg,
-		Payload: msg,
-	}))
-}
-
-// LogInfo for positive events
-func LogInfo(msg string) {
-	l.Println(internal.Marshal(&internal.LogMsg{
-		Level:   "INFO",
-		Host:    internal.GetHost(),
-		Message: msg,
-		Payload: msg,
-	}))
-}
-
-// LogTrace for trace data
-func LogTrace(msg string, spot interface{}) {
-	if Mode {
-		spotMsg := ""
-		switch spot.(type) {
-		case interface{}:
-			spotMsg = internal.MarshalStruct(spot)
-		case int:
-			spotMsg = fmt.Sprintf("%+d", spot)
-		default:
-			spotMsg = fmt.Sprintf("%s", spot)
-		}
-
-		l.Println(internal.Marshal(&internal.LogMsg{
-			Level:   "TRACE",
-			Host:    internal.GetHost(),
-			Message: msg,
-			Payload: msg + ", " + spotMsg,
-		}))
+	})
+	if level == levelFATAL {
+		global.Fatalln(stringifierLogMsg)
+		return
 	}
+
+	global.Println(stringifierLogMsg)
 }
 
-// LogFatal stop app use os.Exit(1)
-func LogFatal(err error) {
-	errStr := cast(err)
-	l.Fatalln(internal.Marshal(&internal.LogMsg{
-		Level:   "FATAL",
-		Host:    internal.GetHost(),
-		Message: err.Error(),
-		Payload: errStr,
-	}))
+// Info Logging for positive events
+func Info(msg string) {
+	Log(levelINFO, msg)
 }
 
-// LogError print error with call data
-func LogError(err error) {
-	errStr := cast(err)
-
-	call := internal.CallInfo(2)
-	l.Println(internal.Marshal(&internal.LogMsg{
-		Level:   "ERROR",
-		Host:    internal.GetHost(),
-		Message: err.Error(),
-		Payload: errStr + ", " + internal.MarshalStruct(call),
-	}))
+// Infof Logging for positive events with formatting
+func Infof(format string, input ...any) {
+	Log(levelINFO, fmt.Sprintf(format, input))
 }
 
-func cast(err error) string {
-	return err.Error()
+// Warn Logging warnings
+func Warn(msg string) {
+	Log(levelWARN, msg)
+}
+
+// Warnf Logging warnings with formatting
+func Warnf(format string, input ...any) {
+	Log(levelINFO, fmt.Sprintf(format, input))
+}
+
+// Fatal Logging with newline and stops app using os.Exit(1)
+func Fatal(v ...any) {
+	Log(levelFATAL, fmt.Sprint(v...))
+}
+
+// Fatalf Logging with newline, formatting, and stops app using os.Exit(1)
+func Fatalf(format string, input ...any) {
+	Log(levelFATAL, fmt.Sprintf(format, input))
+}
+
+// Error Logging error with call data
+func Error(err error) {
+	Log(levelERROR, err.Error())
+}
+
+// Errorf Logging error with call data and formatting
+func Errorf(format string, input ...any) {
+	Log(levelERROR, fmt.Sprintf(format, input))
+}
+
+// LError Logging CustomError with levels and methods DEPRECATED
+func LError(err errs.CustomError) {
+	//errStr := err.Error()
+	//call := internal.CallInfo(2)
+	//global.Println(internal.Marshal(&internal.LogMsg{
+	//	Level:   levelERROR,
+	//	Host:    internal.GetHost(),
+	//	Message: errStr,
+	//}))
+}
+
+func SetTimeFormat(customFormat string) {
+	timeFormat = customFormat
 }
