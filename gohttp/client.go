@@ -14,7 +14,7 @@ type Core struct {
 	requestFormat  formatType
 	responseFormat formatType
 	headers        map[string]string
-	payload        interface{}
+	requestBody    interface{}
 	result         interface{}
 }
 
@@ -90,12 +90,12 @@ func (c *Core) SetResponseFormat(format formatType) *Core {
 	return c
 }
 
-func (c *Core) SetPayload(payload interface{}) *Core {
+func (c *Core) SetRequestBody(requestBody interface{}) *Core {
 	if c == nil {
 		return nil
 	}
 
-	c.payload = payload
+	c.requestBody = requestBody
 	return c
 }
 
@@ -132,7 +132,7 @@ func (c *Core) Execute(ctx context.Context) (*http.Response, error) {
 }
 
 func (c *Core) generateRequest(ctx context.Context) (*http.Request, error) {
-	requestBody, err := payloadByFormat(c.requestFormat, c.payload)
+	requestBody, err := payloadByFormat(c.requestFormat, c.requestBody)
 	if err != nil {
 		return nil, errs.Wrap("create request body: %v", err)
 	}
@@ -167,5 +167,11 @@ func (c *Core) validateBuilder() error {
 		return ErrorInvalidMethod
 	}
 
+	if c.requestFormat == "" {
+		c.requestFormat = FormatJSON
+	}
+	if c.responseFormat == "" {
+		c.responseFormat = FormatJSON
+	}
 	return nil
 }
