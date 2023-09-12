@@ -13,6 +13,7 @@ type Core struct {
 	method         methodType
 	requestFormat  formatType
 	responseFormat formatType
+	headers        map[string]string
 	payload        interface{}
 	result         interface{}
 }
@@ -22,7 +23,10 @@ func SetDefaultClient(httpClient *http.Client) *Core {
 		return nil
 	}
 	defaultClient = httpClient
-	return &Core{httpClient: defaultClient}
+	return &Core{
+		httpClient: defaultClient,
+		headers:    map[string]string{},
+	}
 }
 
 func NewRequest(client ...*http.Client) *Core {
@@ -31,7 +35,10 @@ func NewRequest(client ...*http.Client) *Core {
 			httpClient: defaultClient,
 		}
 	}
-	return &Core{httpClient: client[0]}
+	return &Core{
+		httpClient: client[0],
+		headers:    map[string]string{},
+	}
 }
 
 func (c *Core) SetURL(url string) *Core {
@@ -58,6 +65,19 @@ func (c *Core) SetRequestFormat(format formatType) *Core {
 	}
 
 	c.requestFormat = format
+	return c
+}
+
+func (c *Core) SetHeader(key string, value string) *Core {
+	if c.headers == nil {
+		c.headers = map[string]string{}
+	}
+	c.headers[key] = value
+	return c
+}
+
+func (c *Core) SetHeaders(headers map[string]string) *Core {
+	c.headers = headers
 	return c
 }
 
@@ -127,7 +147,15 @@ func (c *Core) generateRequest(ctx context.Context) (*http.Request, error) {
 		request.Header.Set("Content-Type", contentType)
 	}
 
+	c.setHeaders(request)
+
 	return request, nil
+}
+
+func (c *Core) setHeaders(request *http.Request) {
+	for key, value := range c.headers {
+		request.Header.Set(key, value)
+	}
 }
 
 func (c *Core) validateBuilder() error {
