@@ -69,7 +69,7 @@ func Fatal(v ...any) {
 
 // Fatalf Logging with newline, formatting, and stops app using os.Exit(1)
 func Fatalf(format string, input ...any) {
-	Log(levelFATAL, fmt.Sprintf(format, input))
+	Log(levelFATAL, fmt.Sprintf(format, input...))
 }
 
 // Error Logging error with call data
