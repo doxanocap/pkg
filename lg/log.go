@@ -13,6 +13,8 @@ const (
 	levelERROR = "ERROR"
 	levelWARN  = "WARN"
 	levelFATAL = "FATAL"
+
+	callLevel = 3
 )
 
 // Global
@@ -23,7 +25,7 @@ var (
 
 // Log Logging with custom log level
 func Log(level, msg string) {
-	call := CallInfo(2)
+	call := CallInfo(callLevel)
 	stringifierLogMsg := Marshal(&LogMsg{
 		Time:    time.Now().Format(timeFormat),
 		Level:   level,
@@ -57,7 +59,7 @@ func Warn(msg string) {
 
 // Warnf Logging warnings with formatting
 func Warnf(format string, input ...any) {
-	Log(levelINFO, fmt.Sprintf(format, input))
+	Log(levelWARN, fmt.Sprintf(format, input))
 }
 
 // Fatal Logging with newline and stops app using os.Exit(1)
@@ -72,7 +74,11 @@ func Fatalf(format string, input ...any) {
 
 // Error Logging error with call data
 func Error(err error) {
-	Log(levelERROR, err.Error())
+	msg := "nil"
+	if err != nil {
+		msg = err.Error()
+	}
+	Log(levelERROR, msg)
 }
 
 // Errorf Logging error with call data and formatting

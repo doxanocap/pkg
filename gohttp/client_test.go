@@ -43,9 +43,8 @@ func Test(t *testing.T) {
 
 	res, err := NewRequest().
 		SetURL("http://localhost:8080/ping").
-		SetMethod(MethodGet).
+		SetMethod(MethodPost).
 		SetHeader("TOKEN", "test123456").
-		SetRequestFormat(FormatJSON).
 		Execute(ctx)
 	if err != nil {
 		lg.Fatalf("gohttp: %v", err)

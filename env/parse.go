@@ -1,76 +1,116 @@
 package env
 
 import (
-	"github.com/spf13/viper"
+	"bufio"
+	"fmt"
+	"github.com/doxanocap/pkg/errs"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
-var (
-	defaultTAG = "mapstructure"
-)
+func LoadFile(filePath string) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return errs.Wrap("env: open file: ", err)
+	}
 
-func Unmarshal(confPath string, obj any) error {
-	SetViperDefaults(obj)
+	scanner := bufio.NewScanner(file)
+	for i := 0; scanner.Scan(); i++ {
+		line := scanner.Text()
+		if line == "" {
+			continue
+		}
 
-	viper.SetConfigFile(confPath)
+		vars := strings.Split(line, "=")
+		if len(vars) != 2 {
+			return fmt.Errorf("scanning line %d: invalid format", i)
+		}
+		key := vars[0]
+		value := removeBrackets(vars[1])
 
-	_ = viper.ReadInConfig()
+		temp := os.Getenv(key)
+		if temp != "" && priority == 1 {
+			continue
+		}
 
-	viper.AutomaticEnv()
-	err := viper.Unmarshal(obj)
-	return err
+		err := os.Setenv(key, value)
+		if err != nil {
+			return fmt.Errorf("scanning line %d: %v", i, err)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return errs.Wrap("env: scanner: ", err)
+	}
+
+	return nil
 }
 
-func SetDefaultTag(tag string) {
-	defaultTAG = tag
-}
+func Unmarshal(cfg interface{}) error {
+	baseValue := reflect.ValueOf(&cfg)
+	v := reflect.Indirect(baseValue.Elem().Elem())
+	if !v.CanAddr() {
+		return fmt.Errorf("value cannot be addressed")
+	}
 
-func SetOsENV(obj any) map[string]interface{} {
-	m := map[string]interface{}{}
-	v := reflect.Indirect(reflect.ValueOf(obj))
 	fields := reflect.VisibleFields(v.Type())
-
-	var fieldTag string
-	var tagName string
+	var (
+		fieldTag   string
+		fieldValue reflect.Value
+		kind       reflect.Kind
+		key        string
+		value      string
+	)
 
 	for _, field := range fields {
 		if field.Anonymous || !field.IsExported() {
 			continue
 		}
 
-		fieldTag = field.Tag.Get(defaultTAG)
+		fieldTag = field.Tag.Get("env")
 		if fieldTag == "" {
 			continue
 		}
 
-		tagName = strings.SplitN(fieldTag, ",", 2)[0]
-
-		m[tagName] = os.Getenv(tagName)
-	}
-	return m
-}
-
-func SetViperDefaults(obj any) {
-	v := reflect.Indirect(reflect.ValueOf(obj))
-	fields := reflect.VisibleFields(v.Type())
-
-	var fieldTag string
-	var tagName string
-
-	for _, field := range fields {
-		if field.Anonymous || !field.IsExported() {
-			continue
+		fieldValue = v.FieldByIndex(field.Index)
+		if !fieldValue.IsValid() {
+			return fmt.Errorf("unmarshal: value is not valid: %s", field.Name)
 		}
 
-		fieldTag = field.Tag.Get(defaultTAG)
-		if fieldTag == "" {
-			continue
+		if !fieldValue.CanAddr() {
+			return fmt.Errorf("unmarshal: value cannot be addressed: %s", field.Name)
 		}
 
-		tagName = strings.SplitN(fieldTag, ",", 2)[0]
+		if !fieldValue.CanSet() {
+			return fmt.Errorf("unmarshal: value cannot be changed: %s", fieldValue)
+		}
 
-		viper.SetDefault(tagName, os.Getenv(tagName))
+		key = strings.SplitN(fieldTag, ",", 2)[0]
+		value = os.Getenv(key)
+
+		if value == "" {
+			return fmt.Errorf("unmarshal: env value not found by key: %s", key)
+		}
+
+		kind = field.Type.Kind()
+
+		switch {
+		case isIntegerType(kind):
+			n, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("unmarshal: parsed value by key: %s", key)
+			}
+			fieldValue.SetInt(int64(n))
+		case kind == reflect.String:
+			fieldValue.SetString(value)
+		case kind == reflect.Bool:
+			fieldValue.SetBool(value == "true")
+		default:
+			return fmt.Errorf("this type is not valid: %s", kind.String())
+		}
 	}
+
+	return nil
 }
