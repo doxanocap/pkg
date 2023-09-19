@@ -3,19 +3,22 @@ package gohttp
 import (
 	"context"
 	"github.com/doxanocap/pkg/errs"
+	"io"
 	"net/http"
 )
 
 type Core struct {
 	httpClient *http.Client
 
-	url            string
-	method         methodType
-	requestFormat  formatType
+	url     string
+	method  methodType
+	headers map[string]string
+
+	requestBody   io.Reader
+	requestFormat formatType
+
+	responseBody   interface{}
 	responseFormat formatType
-	headers        map[string]string
-	requestBody    interface{}
-	result         interface{}
 }
 
 func SetDefaultClient(httpClient *http.Client) *Core {
@@ -90,7 +93,7 @@ func (c *Core) SetResponseFormat(format formatType) *Core {
 	return c
 }
 
-func (c *Core) SetRequestBody(requestBody interface{}) *Core {
+func (c *Core) SetRequestBody(requestBody io.Reader) *Core {
 	if c == nil {
 		return nil
 	}
@@ -99,12 +102,12 @@ func (c *Core) SetRequestBody(requestBody interface{}) *Core {
 	return c
 }
 
-func (c *Core) SetResult(result interface{}) *Core {
+func (c *Core) SetResponseBody(responseBody interface{}) *Core {
 	if c == nil {
 		return nil
 	}
 
-	c.result = result
+	c.responseBody = responseBody
 	return c
 }
 
@@ -122,40 +125,36 @@ func (c *Core) Execute(ctx context.Context) (*http.Response, error) {
 	if err != nil {
 		return nil, errs.Wrap("execute request: %v", err)
 	}
-	defer response.Body.Close()
 
-	err = decodeResponseBody(response.Body, c.responseFormat, c.result)
-	if err != nil {
-		return nil, errs.Wrap("decode response body: %v", err)
+	if c.responseBody != nil {
+		err = decodeResponseBody(response.Body, c.responseFormat, c.responseBody)
+		if err != nil {
+			return nil, errs.Wrap("decode response body: %v", err)
+		}
 	}
 	return response, nil
 }
 
 func (c *Core) generateRequest(ctx context.Context) (*http.Request, error) {
-	requestBody, err := payloadByFormat(c.requestFormat, c.requestBody)
-	if err != nil {
-		return nil, errs.Wrap("create request body: %v", err)
-	}
-
-	request, err := http.NewRequestWithContext(ctx, string(c.method), c.url, requestBody)
+	request, err := http.NewRequestWithContext(ctx, string(c.method), c.url, c.requestBody)
 	if err != nil {
 		return nil, errs.Wrap("create request: %v", err)
 	}
 
-	contentType := contentTypeByFormat(c.requestFormat)
-	if contentType != "" {
-		request.Header.Set("Content-Type", contentType)
-	}
-
 	c.setHeaders(request)
-
+	c.setContentType(request)
 	return request, nil
 }
 
 func (c *Core) setHeaders(request *http.Request) {
 	for key, value := range c.headers {
-		request.Header.Set(key, value)
+		request.Header.Set(key, string(value))
 	}
+}
+
+func (c *Core) setContentType(request *http.Request) {
+	contentType := contentTypeByFormat(c.requestFormat)
+	request.Header.Set("Content-Type", contentType)
 }
 
 func (c *Core) validateBuilder() error {

@@ -15,8 +15,9 @@ func contentTypeByFormat(format formatType) string {
 		return "application/json"
 	case FormatURLEncoded:
 		return "application/x-www-form-urlencoded"
+	default:
+		return "application/json"
 	}
-	return ""
 }
 
 func decodeResponseBody(responseBody io.Reader, format formatType, dst interface{}) error {
