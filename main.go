@@ -1,8 +1,12 @@
 package main
 
-import "github.com/doxanocap/pkg/lg"
+import (
+	"github.com/doxanocap/pkg/errs"
+	"github.com/doxanocap/pkg/lg"
+)
 
 func main() {
-	str := "hehe"
-	lg.Fatalf("qweqqe %s", str)
+	err := errs.New("<qweq>")
+	lg.Info("qwe")
+	lg.Fatalf("qweqqe %s", err)
 }

@@ -20,13 +20,24 @@ const (
 // Global
 var (
 	timeFormat = time.RFC3339
-	global     = log.New(os.Stderr, "", log.Lmsgprefix)
+	global     = log.New(os.Stdout, "", log.Lmsgprefix)
 )
 
 // Log Logging with custom log level
 func Log(level, msg string) {
+	encoder := newEncoder()
 	call := CallInfo(callLevel)
-	stringifierLogMsg := Marshal(&LogMsg{
+
+	fmt.Println(encoder.Marshal(&LogMsg{
+		Time:    time.Now().Format(timeFormat),
+		Level:   level,
+		Host:    GetHost(),
+		File:    call.FileName,
+		Line:    call.Line,
+		Message: msg,
+	}))
+
+	stringifierLogMsg := encoder.Marshal(&LogMsg{
 		Time:    time.Now().Format(timeFormat),
 		Level:   level,
 		Host:    GetHost(),
@@ -34,6 +45,7 @@ func Log(level, msg string) {
 		Line:    call.Line,
 		Message: msg,
 	})
+
 	if level == levelFATAL {
 		global.Fatalln(stringifierLogMsg)
 		return
@@ -59,7 +71,7 @@ func Warn(msg string) {
 
 // Warnf Logging warnings with formatting
 func Warnf(format string, input ...any) {
-	Log(levelWARN, fmt.Sprintf(format, input))
+	Log(levelWARN, fmt.Sprintf(format, input...))
 }
 
 // Fatal Logging with newline and stops app using os.Exit(1)
