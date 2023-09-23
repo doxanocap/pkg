@@ -1,8 +1,17 @@
 package lg
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 )
+
+var baseEncoder = &Encoder{}
+
+type Encoder struct {
+	buff *bytes.Buffer
+	json *json.Encoder
+}
 
 type LogMsg struct {
 	Time    string `json:"time"`
@@ -13,12 +22,25 @@ type LogMsg struct {
 	Message string `json:"message"`
 }
 
-func Marshal(logMsg *LogMsg) string {
-	msg, _ := json.Marshal(logMsg)
-	return string(msg)
+func newEncoder() *Encoder {
+	if baseEncoder.json == nil {
+		buff := bytes.NewBuffer([]byte{})
+		baseEncoder.buff = buff
+		baseEncoder.json = json.NewEncoder(baseEncoder.buff)
+		baseEncoder.json.SetEscapeHTML(false)
+	}
+
+	return baseEncoder
 }
 
-func MarshalStruct(v interface{}) string {
-	msg, _ := json.Marshal(v)
-	return string(msg)
+func (e *Encoder) Marshal(logMsg *LogMsg) string {
+	_ = e.json.Encode(logMsg)
+	res, _ := io.ReadAll(e.buff)
+	return string(res)
+}
+
+func (e *Encoder) MarshalStruct(v interface{}) string {
+	_ = e.json.Encode(v)
+	res, _ := io.ReadAll(e.buff)
+	return string(res)
 }
