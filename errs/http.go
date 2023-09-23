@@ -7,19 +7,19 @@ import (
 var BaseErrorHttp = &ErrorHttp{}
 
 type ErrorHttp struct {
-	Code int
-	Msg  string
+	Code    int    `json:"-"`
+	Message string `json:"message"`
 }
 
 func NewHttp(code int, msg string) *ErrorHttp {
 	return &ErrorHttp{
-		Code: code,
-		Msg:  msg,
+		Code:    code,
+		Message: msg,
 	}
 }
 
 func (e *ErrorHttp) Error() string {
-	return fmt.Sprintf("code: %d | msg: %s", e.Code, e.Msg)
+	return fmt.Sprintf("code: %d | msg: %s", e.Code, e.Message)
 }
 
 func (e *ErrorHttp) NewCode(code int) *ErrorHttp {
