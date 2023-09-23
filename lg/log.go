@@ -28,15 +28,6 @@ func Log(level, msg string) {
 	encoder := newEncoder()
 	call := CallInfo(callLevel)
 
-	fmt.Println(encoder.Marshal(&LogMsg{
-		Time:    time.Now().Format(timeFormat),
-		Level:   level,
-		Host:    GetHost(),
-		File:    call.FileName,
-		Line:    call.Line,
-		Message: msg,
-	}))
-
 	stringifierLogMsg := encoder.Marshal(&LogMsg{
 		Time:    time.Now().Format(timeFormat),
 		Level:   level,
@@ -47,11 +38,11 @@ func Log(level, msg string) {
 	})
 
 	if level == levelFATAL {
-		global.Fatalln(stringifierLogMsg)
+		global.Fatal(stringifierLogMsg)
 		return
 	}
 
-	global.Println(stringifierLogMsg)
+	global.Print(stringifierLogMsg)
 }
 
 // Info Logging for positive events
@@ -61,7 +52,7 @@ func Info(msg string) {
 
 // Infof Logging for positive events with formatting
 func Infof(format string, input ...any) {
-	Log(levelINFO, fmt.Sprintf(format, input))
+	Log(levelINFO, fmt.Sprintf(format, input...))
 }
 
 // Warn Logging warnings

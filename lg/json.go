@@ -3,14 +3,13 @@ package lg
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 )
 
-var (
-	jsonEncoder *json.Encoder
-)
+var baseEncoder = &Encoder{}
 
 type Encoder struct {
-	buff []byte
+	buff *bytes.Buffer
 	json *json.Encoder
 }
 
@@ -24,27 +23,24 @@ type LogMsg struct {
 }
 
 func newEncoder() *Encoder {
-	var buff []byte
+	if baseEncoder.json == nil {
+		buff := bytes.NewBuffer([]byte{})
+		baseEncoder.buff = buff
+		baseEncoder.json = json.NewEncoder(baseEncoder.buff)
+		baseEncoder.json.SetEscapeHTML(false)
+	}
 
-	if jsonEncoder == nil {
-		writer := bytes.NewBuffer(buff)
-		jsonEncoder = json.NewEncoder(writer)
-		jsonEncoder.SetEscapeHTML(false)
-	}
-	return &Encoder{
-		json: jsonEncoder,
-		buff: buff,
-	}
+	return baseEncoder
 }
 
 func (e *Encoder) Marshal(logMsg *LogMsg) string {
 	_ = e.json.Encode(logMsg)
-	e.json..
-		fmt.Println(e.buff)
-	return string(e.buff)
+	res, _ := io.ReadAll(e.buff)
+	return string(res)
 }
 
 func (e *Encoder) MarshalStruct(v interface{}) string {
 	_ = e.json.Encode(v)
-	return string(e.buff)
+	res, _ := io.ReadAll(e.buff)
+	return string(res)
 }

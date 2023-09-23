@@ -19,6 +19,7 @@ func InitRLM(MaxLimitRate, BlockTimeIncrement int, DefaultBlockTime int64) error
 	return nil
 }
 
+// ToDo: complete package and write README.md
 func RequestLimitMiddleware(ctx *gin.Context) {
 	nilParams := internal.Params{}
 	if internal.DefaultParams == nilParams {
@@ -37,7 +38,6 @@ func RequestLimitMiddleware(ctx *gin.Context) {
 	if fwdAddress != "" {
 		ipAddress = fwdAddress
 	}
-	fmt.Println(ipAddress)
 
 	l, dur := mainLimiter.GetLimiter(ipAddress)
 	if dur != 0 {
