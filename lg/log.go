@@ -86,7 +86,7 @@ func Error(err error) {
 
 // Errorf Logging error with call data and formatting
 func Errorf(format string, input ...any) {
-	Log(levelERROR, fmt.Sprintf(format, input))
+	Log(levelERROR, fmt.Sprintf(format, input...))
 }
 
 // LError Logging CustomError with levels and methods DEPRECATED
