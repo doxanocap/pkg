@@ -1,10 +1,10 @@
 # lg - simple logger for Go
 
-LG is a lightweight logging package for Go that provides simple and flexible logging capabilities for your applications. It allows you to log messages at different levels of severity, such as informational messages, warnings, errors, and fatal errors.
+lg is a lightweight logging package for Go that provides simple and flexible logging capabilities for your applications. It allows you to log messages at different levels of severity, such as informational messages, warnings, errors, and fatal errors.
 
 ## Installation
 
-To use LG in your Go project, you can simply import it and get started:
+To use lg in your Go project, you can simply import it and get started:
 
 ```shell
 go get -u github.com/doxanocap/pkg/lg
