@@ -6,11 +6,13 @@ import (
 	"testing"
 )
 
-func Test(t *testing.T) {
+func TestHttp(t *testing.T) {
 	err := NewHttp(http.StatusNotFound, "item not found")
 
 	assert.Equal(t, "code: 404 | msg: item not found", err.Error())
 
 	n := UnmarshalCode(err)
 	assert.Equal(t, 404, n)
+	msg := GetMessage(err)
+	assert.Equal(t, "item not found", msg)
 }

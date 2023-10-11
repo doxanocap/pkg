@@ -2,6 +2,7 @@ package errs
 
 import (
 	"fmt"
+	"net/http"
 )
 
 var BaseErrorHttp = &ErrorHttp{}
@@ -47,5 +48,29 @@ func UnmarshalCode(err error) (code int) {
 		code = code*10 + n
 	}
 
+	if n == 0 {
+		return http.StatusInternalServerError
+	}
 	return
+}
+
+func GetMessage(err error) string {
+	var (
+		msg = err.Error()
+		idx = 0
+	)
+
+	if len(msg) < 8 {
+		return msg
+	}
+
+	for i := 6; true; i++ {
+		if msg[i] < 48 || msg[i] > 57 {
+			idx = i
+			break
+		}
+	}
+	// code: %d | msg: %s <- len of chars after %d till %s
+	// equal to 8
+	return msg[idx+8:]
 }

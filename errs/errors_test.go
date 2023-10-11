@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test(t *testing.T) {
+func TestErrors(t *testing.T) {
 	err := someService()
 	if err != nil {
 		err = Wrap("wrapping err from service", err)
