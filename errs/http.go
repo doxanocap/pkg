@@ -54,7 +54,7 @@ func UnmarshalCode(err error) (code int) {
 	return
 }
 
-func GetMessage(err error) string {
+func UnmarshalMsg(err error) string {
 	var (
 		msg = err.Error()
 		idx = 0

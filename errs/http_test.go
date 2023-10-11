@@ -13,6 +13,6 @@ func TestHttp(t *testing.T) {
 
 	n := UnmarshalCode(err)
 	assert.Equal(t, 404, n)
-	msg := GetMessage(err)
+	msg := UnmarshalMsg(err)
 	assert.Equal(t, "item not found", msg)
 }
