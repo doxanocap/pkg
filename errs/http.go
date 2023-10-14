@@ -48,7 +48,7 @@ func UnmarshalCode(err error) (code int) {
 		code = code*10 + n
 	}
 
-	if n == 0 {
+	if code == 0 {
 		return http.StatusInternalServerError
 	}
 	return
