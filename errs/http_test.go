@@ -23,4 +23,14 @@ func TestHttp(t *testing.T) {
 	msg = UnmarshalMsg(err)
 	assert.Equal(t, "invalid request", msg)
 
+	err = NewHttp(http.StatusUnauthorized, "user is not authorized to this request")
+	assert.Equal(t, "code: 401 | msg: user is not authorized to this request", err.Error())
+
+	code = UnmarshalCode(err)
+	assert.Equal(t, http.StatusUnauthorized, code)
+	msg = UnmarshalMsg(err)
+	assert.Equal(t, "user is not authorized to this request", msg)
+
+	err1 := New("code: 1 hello world")
+	assert.NotEqual(t, "code: hello world", UnmarshalMsg(err1))
 }

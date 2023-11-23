@@ -64,11 +64,22 @@ func UnmarshalMsg(err error) string {
 		return msg
 	}
 
+	// if message do not start with "code:"
+	// we know that it is not an HttpError
+	if msg[0:5] != "code:" {
+		return msg
+	}
+
 	for i := 6; true; i++ {
 		if msg[i] < 48 || msg[i] > 57 {
 			idx = i
 			break
 		}
+	}
+	// if idx == 6, we know that even message starts with "code:"
+	// and if after that there is no number, this is not an HTTP error
+	if idx == 6 {
+		return msg
 	}
 	// code: %d | msg: %s <- len of chars after %d till %s
 	// equal to 8
