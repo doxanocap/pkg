@@ -19,6 +19,8 @@ type Core struct {
 
 	responseBody   interface{}
 	responseFormat formatType
+
+	request *http.Request
 }
 
 func SetDefaultClient(httpClient *http.Client) *Core {
@@ -111,17 +113,28 @@ func (c *Core) SetResponseBody(responseBody interface{}) *Core {
 	return c
 }
 
+func (c *Core) SetRequest(request *http.Request) *Core {
+	if c == nil {
+		return nil
+	}
+	c.request = request
+	return c
+}
+
 func (c *Core) Execute(ctx context.Context) (*http.Response, error) {
-	if err := c.validateBuilder(); err != nil {
+	err := c.validateBuilder()
+	if err != nil {
 		return nil, errs.Wrap("build request: %v", err)
 	}
 
-	request, err := c.generateRequest(ctx)
-	if err != nil {
-		return nil, errs.Wrap("generate request: %v", err)
+	if c.request == nil {
+		c.request, err = c.generateRequest(ctx)
+		if err != nil {
+			return nil, errs.Wrap("generate request: %v", err)
+		}
 	}
 
-	response, err := c.httpClient.Do(request)
+	response, err := c.httpClient.Do(c.request)
 	if err != nil {
 		return nil, errs.Wrap("execute request: %v", err)
 	}
