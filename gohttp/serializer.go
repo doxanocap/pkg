@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func contentTypeByFormat(format formatType) string {
+func contentTypeByFormat(format FormatType) string {
 	switch format {
 	case FormatJSON:
 		return "application/json"
@@ -20,7 +20,7 @@ func contentTypeByFormat(format formatType) string {
 	}
 }
 
-func decodeResponseBody(responseBody io.Reader, format formatType, dst interface{}) error {
+func decodeResponseBody(responseBody io.Reader, format FormatType, dst interface{}) error {
 	switch format {
 	case FormatJSON:
 		raw, err := io.ReadAll(responseBody)
@@ -33,7 +33,7 @@ func decodeResponseBody(responseBody io.Reader, format formatType, dst interface
 	return nil
 }
 
-func payloadByFormat(format formatType, v interface{}) (payload io.Reader, err error) {
+func payloadByFormat(format FormatType, v interface{}) (payload io.Reader, err error) {
 	switch format {
 	case FormatJSON:
 		if v != nil {

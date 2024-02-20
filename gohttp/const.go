@@ -8,23 +8,12 @@ import (
 )
 
 type (
-	formatType string
-	methodType string
+	FormatType string
 )
 
 const (
-	FormatJSON       formatType = "JSON"
-	FormatURLEncoded formatType = "URLENCODED"
-
-	MethodGet     methodType = "GET"
-	MethodHead    methodType = "HEAD"
-	MethodPost    methodType = "POST"
-	MethodPut     methodType = "PUT"
-	MethodPatch   methodType = "PATCH"
-	MethodDelete  methodType = "DELETE"
-	MethodConnect methodType = "CONNECT"
-	MethodOptions methodType = "OPTIONS"
-	MethodTrace   methodType = "TRACE"
+	FormatJSON       FormatType = "JSON"
+	FormatURLEncoded FormatType = "URLENCODED"
 )
 
 var (
@@ -42,14 +31,14 @@ var (
 	ErrorInvalidMethod error = errs.New("invalid method")
 )
 
-func validateMethod(method methodType) bool {
-	return len(method) > 0 && (method == MethodGet ||
-		method == MethodPost ||
-		method == MethodPut ||
-		method == MethodDelete ||
-		method == MethodPatch ||
-		method == MethodConnect ||
-		method == MethodHead ||
-		method == MethodOptions ||
-		method == MethodTrace)
+func validateMethod(method string) bool {
+	return len(method) > 0 && (method == http.MethodGet ||
+		method == http.MethodPost ||
+		method == http.MethodPut ||
+		method == http.MethodDelete ||
+		method == http.MethodPatch ||
+		method == http.MethodConnect ||
+		method == http.MethodHead ||
+		method == http.MethodOptions ||
+		method == http.MethodTrace)
 }

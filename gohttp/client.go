@@ -11,14 +11,14 @@ type Core struct {
 	httpClient *http.Client
 
 	url     string
-	method  methodType
+	method  string
 	headers map[string]string
 
 	requestBody   io.Reader
-	requestFormat formatType
+	requestFormat FormatType
 
 	responseBody   interface{}
-	responseFormat formatType
+	responseFormat FormatType
 
 	request *http.Request
 }
@@ -55,7 +55,7 @@ func (c *Core) SetURL(url string) *Core {
 	return c
 }
 
-func (c *Core) SetMethod(method methodType) *Core {
+func (c *Core) SetMethod(method string) *Core {
 	if c == nil {
 		return nil
 	}
@@ -64,7 +64,7 @@ func (c *Core) SetMethod(method methodType) *Core {
 	return c
 }
 
-func (c *Core) SetRequestFormat(format formatType) *Core {
+func (c *Core) SetRequestFormat(format FormatType) *Core {
 	if c == nil {
 		return nil
 	}
@@ -86,7 +86,7 @@ func (c *Core) SetHeaders(headers map[string]string) *Core {
 	return c
 }
 
-func (c *Core) SetResponseFormat(format formatType) *Core {
+func (c *Core) SetResponseFormat(format FormatType) *Core {
 	if c == nil {
 		return nil
 	}
@@ -161,7 +161,7 @@ func (c *Core) generateRequest(ctx context.Context) (*http.Request, error) {
 
 func (c *Core) setHeaders(request *http.Request) {
 	for key, value := range c.headers {
-		request.Header.Set(key, string(value))
+		request.Header.Set(key, value)
 	}
 }
 

@@ -43,7 +43,7 @@ func Test(t *testing.T) {
 
 	res, err := NewRequest().
 		SetURL("http://localhost:8080/ping").
-		SetMethod(MethodGet).
+		SetMethod(http.MethodGet).
 		SetHeader("TOKEN", "test123456").
 		Execute(ctx)
 	if err != nil {
