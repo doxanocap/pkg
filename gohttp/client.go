@@ -5,12 +5,13 @@ import (
 	"github.com/doxanocap/pkg/errs"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 type Core struct {
 	httpClient *http.Client
 
-	url     string
+	url     *url.URL
 	method  string
 	headers map[string]string
 
@@ -46,12 +47,14 @@ func NewRequest(client ...*http.Client) *Core {
 	}
 }
 
-func (c *Core) SetURL(url string) *Core {
+func (c *Core) SetURL(raw string) *Core {
 	if c == nil {
 		return nil
 	}
-
-	c.url = url
+	u, err := url.Parse(raw)
+	if err == nil {
+		c.url = u
+	}
 	return c
 }
 
@@ -122,15 +125,22 @@ func (c *Core) SetRequest(request *http.Request) *Core {
 }
 
 func (c *Core) Execute(ctx context.Context) (*http.Response, error) {
-	err := c.validateBuilder()
-	if err != nil {
-		return nil, errs.Wrap("build request: %v", err)
-	}
-
 	if c.request == nil {
+		err := c.validateBuilder()
+		if err != nil {
+			return nil, errs.Wrap("build request: %v", err)
+		}
+
 		c.request, err = c.generateRequest(ctx)
 		if err != nil {
 			return nil, errs.Wrap("generate request: %v", err)
+		}
+	} else {
+		if c.method != "" && c.request.Method != c.method {
+			c.request.Method = c.method
+		}
+		if c.url != nil && c.request.URL.String() != c.url.String() {
+			c.request.URL = c.url
 		}
 	}
 
@@ -149,7 +159,7 @@ func (c *Core) Execute(ctx context.Context) (*http.Response, error) {
 }
 
 func (c *Core) generateRequest(ctx context.Context) (*http.Request, error) {
-	request, err := http.NewRequestWithContext(ctx, string(c.method), c.url, c.requestBody)
+	request, err := http.NewRequestWithContext(ctx, c.method, c.url.String(), c.requestBody)
 	if err != nil {
 		return nil, errs.Wrap("create request: %v", err)
 	}
@@ -171,8 +181,8 @@ func (c *Core) setContentType(request *http.Request) {
 }
 
 func (c *Core) validateBuilder() error {
-	if c.url == "" {
-		return ErrorEmptyURL
+	if c.url == nil {
+		return ErrorInvalidURL
 	}
 
 	if !validateMethod(c.method) {

@@ -26,7 +26,7 @@ var (
 		},
 	}
 
-	ErrorEmptyURL      error = errs.New("empty url")
+	ErrorInvalidURL    error = errs.New("invalid url")
 	ErrorEmptyMethod   error = errs.New("empty method")
 	ErrorInvalidMethod error = errs.New("invalid method")
 )
