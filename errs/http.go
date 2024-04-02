@@ -1,87 +1,66 @@
 package errs
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 )
 
-var BaseErrorHttp = &ErrorHttp{}
+const (
+	defaultStatusCode = http.StatusInternalServerError
+)
 
-type ErrorHttp struct {
-	Code    int    `json:"-"`
-	Message string `json:"message"`
+type translation struct {
+	Lang  string `json:"lang"`
+	Value string `json:"value"`
 }
 
-func NewHttp(code int, msg string) *ErrorHttp {
-	return &ErrorHttp{
-		Code:    code,
-		Message: msg,
+type HttpError struct {
+	Translations []translation `json:"-"`
+
+	Lang    string `json:"lang,omitempty"`
+	Message string `json:"message,omitempty"`
+
+	StatusCode int    `json:"-"`
+	ErrorCode  string `json:"error_code,omitempty"`
+}
+
+func NewHttp(code int, msg string) *HttpError {
+	return &HttpError{
+		StatusCode: code,
+		Message:    msg,
 	}
 }
 
-func (e *ErrorHttp) Error() string {
-	return fmt.Sprintf("code: %d | msg: %s", e.Code, e.Message)
+func (e *HttpError) Error() string {
+	return e.Message
 }
 
-func (e *ErrorHttp) NewCode(code int) *ErrorHttp {
-	e.Code = code
+func (e *HttpError) InLanguage(lang string) *HttpError {
+	for _, t := range e.Translations {
+		if t.Lang == lang {
+			e.Lang = t.Lang
+			e.Message = t.Value
+			return e
+		}
+	}
 	return e
 }
 
-func UnmarshalCode(err error) (code int) {
-	var (
-		msg = err.Error()
-		n   = 0
-	)
-
-	if len(msg) < 8 {
-		return
-	}
-
-	// len("code:") == 5 -> we start from 6th index
-	for i := 6; true; i++ {
-		if msg[i] < 48 || msg[i] > 57 {
-			break
-		}
-
-		n = int(msg[i] - 48)
-		code = code*10 + n
-	}
-
-	if code == 0 {
-		return http.StatusInternalServerError
-	}
-	return
+func (e *HttpError) AddTranslation(lang string, value string) *HttpError {
+	e.Translations = append(e.Translations, translation{lang, value})
+	return e
 }
 
-func UnmarshalMsg(err error) string {
-	var (
-		msg = err.Error()
-		idx = 0
-	)
+func (e *HttpError) SetCode(code int) *HttpError {
+	e.StatusCode = code
+	return e
+}
 
-	if len(msg) < 8 {
-		return msg
+func UnmarshalError(err error) *HttpError {
+	e := &HttpError{}
+	if errors.As(err, &e) {
+		return e
 	}
-
-	// if message do not start with "code:"
-	// we know that it is not an HttpError
-	if msg[0:5] != "code:" {
-		return msg
-	}
-
-	for i := 6; true; i++ {
-		if msg[i] < 48 || msg[i] > 57 {
-			idx = i
-			break
-		}
-	}
-	// if idx == 6, we know that even message starts with "code:"
-	// and if after that there is no number, this is not an HTTP error
-	if idx == 6 {
-		return msg
-	}
-	// code: %d | msg: %s <- len of chars after %d till %s
-	// equal to 8
-	return msg[idx+8:]
+	e.Message = err.Error()
+	return e
 }

@@ -1,36 +1,44 @@
 package errs
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
 )
 
+var (
+	ErrUserNotFound = NewHttp(http.StatusNotFound, "user not found").
+		AddTranslation("kz", "юзер табылмады").
+		AddTranslation("ru", "юзер не найден")
+)
+
 func TestHttp(t *testing.T) {
-	err := NewHttp(http.StatusNotFound, "item not found")
-	assert.Equal(t, "code: 404 | msg: item not found", err.Error())
+	httpErr := NewHttp(http.StatusNotFound, "item not found")
+	assert.Equal(t, "item not found", httpErr.Error())
 
-	code := UnmarshalCode(err)
-	assert.Equal(t, http.StatusNotFound, code)
-	msg := UnmarshalMsg(err)
-	assert.Equal(t, "item not found", msg)
+	httpErr = UnmarshalError(ErrUserNotFound)
 
-	err = NewHttp(http.StatusBadRequest, "invalid request")
-	assert.Equal(t, "code: 400 | msg: invalid request", err.Error())
+	assert.Equal(t, "user not found", httpErr.Error())
 
-	code = UnmarshalCode(err)
-	assert.Equal(t, http.StatusBadRequest, code)
-	msg = UnmarshalMsg(err)
-	assert.Equal(t, "invalid request", msg)
+	// check translation
+	assert.Equal(t, "юзер табылмады", httpErr.InLanguage("kz").Error())
+	{
+		err := someServiceCall()
+		if err != nil {
+			httpErr := UnmarshalError(err)
 
-	err = NewHttp(http.StatusUnauthorized, "user is not authorized to this request")
-	assert.Equal(t, "code: 401 | msg: user is not authorized to this request", err.Error())
+			switch httpErr.StatusCode {
+			case http.StatusInternalServerError:
+				return
+			default:
+				fmt.Println(httpErr.InLanguage("kz"))
+			}
+		}
+	}
 
-	code = UnmarshalCode(err)
-	assert.Equal(t, http.StatusUnauthorized, code)
-	msg = UnmarshalMsg(err)
-	assert.Equal(t, "user is not authorized to this request", msg)
+}
 
-	err1 := New("code: 1 hello world")
-	assert.NotEqual(t, "code: hello world", UnmarshalMsg(err1))
+func someServiceCall() error {
+	return ErrUserNotFound
 }
