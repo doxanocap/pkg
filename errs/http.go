@@ -2,6 +2,7 @@ package errs
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
@@ -9,25 +10,17 @@ const (
 	defaultStatusCode = http.StatusInternalServerError
 )
 
-type translation struct {
-	Lang  string `json:"lang"`
-	Value string `json:"value"`
-}
-
 type HttpError struct {
-	Translations []translation `json:"-"`
-
-	Lang    string `json:"lang,omitempty"`
-	Message string `json:"message,omitempty"`
-
 	StatusCode int    `json:"-"`
 	ErrorCode  string `json:"error_code,omitempty"`
+
+	Message string `json:"message"`
 }
 
-func NewHttp(code int, msg string) *HttpError {
+func NewHttp(statusCode int, message string) *HttpError {
 	return &HttpError{
-		StatusCode: code,
-		Message:    msg,
+		StatusCode: statusCode,
+		Message:    message,
 	}
 }
 
@@ -35,24 +28,8 @@ func (e *HttpError) Error() string {
 	return e.Message
 }
 
-func (e *HttpError) InLanguage(lang string) *HttpError {
-	for _, t := range e.Translations {
-		if t.Lang == lang {
-			e.Lang = t.Lang
-			e.Message = t.Value
-			return e
-		}
-	}
-	return e
-}
-
-func (e *HttpError) AddTranslation(lang string, value string) *HttpError {
-	e.Translations = append(e.Translations, translation{lang, value})
-	return e
-}
-
-func (e *HttpError) SetCode(code int) *HttpError {
-	e.StatusCode = code
+func (e *HttpError) SetErrorCode(errorCode string) *HttpError {
+	e.ErrorCode = errorCode
 	return e
 }
 
@@ -63,4 +40,28 @@ func UnmarshalError(err error) *HttpError {
 	}
 	e.Message = err.Error()
 	return e
+}
+
+func SetGinError(ctx *gin.Context, err error) {
+	if err == nil {
+		return
+	}
+
+	_ = ctx.Error(err)
+	httpError := UnmarshalError(err)
+	if httpError.StatusCode != defaultStatusCode {
+		ctx.JSON(httpError.StatusCode, httpError)
+	} else {
+		ctx.Status(httpError.StatusCode)
+	}
+	return
+}
+
+func SetGinErrorWithStatus(ctx *gin.Context, status int, err error) {
+	if err == nil {
+		return
+	}
+	_ = ctx.Error(err)
+	ctx.Status(status)
+	return
 }

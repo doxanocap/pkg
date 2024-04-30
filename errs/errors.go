@@ -7,22 +7,30 @@ import (
 
 var divider = ": "
 
-type err struct {
+type customErr struct {
 	s string
 }
 
-func (e *err) Error() string {
+func (e *customErr) Error() string {
 	return e.s
 }
 
 // New creates new error interface
 func New(text string) error {
-	return &err{s: text}
+	return &customErr{s: text}
 }
 
 // Wrap wraps error with message, as a result you get -> "message: err.Error()"
 func Wrap(msg string, err error) error {
 	return fmt.Errorf("%s%s%s", msg, divider, err.Error())
+}
+
+// WrapIfErr wraps to message if error is not nil
+// better use with defer
+func WrapIfErr(msg string, err error) {
+	if err != nil {
+		err = Wrap(msg, err)
+	}
 }
 
 // NewWithCaller creates new error with a function name from which it was called
