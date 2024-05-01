@@ -45,10 +45,17 @@ func GetGinPrivateErr(ctx *gin.Context) error {
 }
 
 func GetGinPublicErr(ctx *gin.Context) error {
-	if len(ctx.Errors) < 2 {
+	if ctx.Errors == nil {
 		return nil
 	}
-	return ctx.Errors[1]
+	httpError := UnmarshalError(ctx.Errors[0])
+	if httpError.StatusCode != 0 {
+		return httpError
+	}
+	if len(ctx.Errors) > 1 {
+		return ctx.Errors[1]
+	}
+	return nil
 }
 
 func SetGinErrorWithStatus(ctx *gin.Context, status int, err error) {
