@@ -24,16 +24,13 @@ func SetGinError(ctx *gin.Context, privateErr error, publicErr ...error) {
 	}
 
 	if publicErr == nil {
+		ctx.Status(http.StatusInternalServerError)
 		return
 	}
 
 	// this error will be shown as output
 	httpError = UnmarshalError(publicErr[0])
-	if httpError.StatusCode != 0 {
-		ctx.JSON(httpError.StatusCode, httpError)
-	} else {
-		ctx.Status(http.StatusInternalServerError)
-	}
+	ctx.JSON(httpError.StatusCode, httpError)
 	return
 }
 
