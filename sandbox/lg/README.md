@@ -1,4 +1,4 @@
-# lg - simple logger for Go
+# lg - DEPRECATED
 
 lg is a lightweight logging package for Go that provides simple and flexible logging capabilities for your applications. It allows you to log messages at different levels of severity, such as informational messages, warnings, errors, and fatal errors.
 

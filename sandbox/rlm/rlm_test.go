@@ -2,7 +2,7 @@ package rlm
 
 import (
 	"fmt"
-	"github.com/doxanocap/pkg/lg"
+	"github.com/doxanocap/pkg/sandbox/lg"
 	"testing"
 	"time"
 )

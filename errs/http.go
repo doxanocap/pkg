@@ -2,12 +2,6 @@ package errs
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
-	"net/http"
-)
-
-const (
-	defaultStatusCode = http.StatusInternalServerError
 )
 
 type HttpError struct {
@@ -40,28 +34,4 @@ func UnmarshalError(err error) *HttpError {
 	}
 	e.Message = err.Error()
 	return e
-}
-
-func SetGinError(ctx *gin.Context, err error) {
-	if err == nil {
-		return
-	}
-
-	_ = ctx.Error(err)
-	httpError := UnmarshalError(err)
-	if httpError.StatusCode != defaultStatusCode {
-		ctx.JSON(httpError.StatusCode, httpError)
-	} else {
-		ctx.Status(httpError.StatusCode)
-	}
-	return
-}
-
-func SetGinErrorWithStatus(ctx *gin.Context, status int, err error) {
-	if err == nil {
-		return
-	}
-	_ = ctx.Error(err)
-	ctx.Status(status)
-	return
 }

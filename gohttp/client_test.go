@@ -3,7 +3,7 @@ package gohttp
 import (
 	"context"
 	"fmt"
-	"github.com/doxanocap/pkg/lg"
+	"github.com/doxanocap/pkg/sandbox/lg"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"net/http"

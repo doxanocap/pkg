@@ -31,7 +31,7 @@ package main
 
 import (
 	"github.com/doxanocap/pkg/gohttp"
-	"github.com/doxanocap/pkg/lg"
+	"github.com/doxanocap/pkg/sandbox/lg"
 )
 
 type Cfg struct {

@@ -1,7 +1,7 @@
 package env
 
 import (
-	"github.com/doxanocap/pkg/lg"
+	"github.com/doxanocap/pkg/sandbox/lg"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

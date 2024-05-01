@@ -12,6 +12,7 @@ import "github.com/doxanocap/pkg/gohttp"
 ```
 
 ## Usage
+
 ```go
 package main
 
@@ -19,13 +20,13 @@ import (
 	"context"
 	"github.com/doxanocap/pkg/errs"
 	"github.com/doxanocap/pkg/gohttp"
-	"github.com/doxanocap/pkg/lg"
+	"github.com/doxanocap/pkg/sandbox/lg"
 )
 
 func main() {
 	// You can change default http client params
 	//gohttp.SetDefaultClient(&http.Client{})
-	
+
 	res, err := gohttp.NewRequest().
 		SetURL("http://localhost:8080/healthcheck").
 		SetMethod(gohttp.MethodGet).
