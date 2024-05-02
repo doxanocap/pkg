@@ -1,7 +1,6 @@
 package rlm
 
 import (
-	"github.com/doxanocap/pkg/tools"
 	"golang.org/x/time/rate"
 	"time"
 )
@@ -30,8 +29,8 @@ func (r *RateLimiter) BlockByIP(ip string) {
 	}
 
 	r.incrementBlock()
-	client.lastSeen = tools.GetPtr(time.Now())
-	client.blockDuration = tools.GetPtr(r.params.BlockDuration)
+	client.lastSeen = ctxholder.GetPtr(time.Now())
+	client.blockDuration = ctxholder.GetPtr(r.params.BlockDuration)
 }
 
 func (r *RateLimiter) addLimiter(ip string) *Client {

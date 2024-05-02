@@ -1,9 +1,9 @@
 package router
 
 import (
+	"github.com/doxanocap/pkg/config"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/kan-too/pkg/config"
 	"net/http"
 )
 
@@ -40,8 +40,5 @@ func InitGinRouter(env string) *gin.Engine {
 		ctx.Status(http.StatusOK)
 	})
 
-	if env == config.EnvProduction {
-		router.Use(gin.Logger())
-	}
 	return router
 }

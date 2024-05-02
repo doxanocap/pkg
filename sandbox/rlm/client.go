@@ -1,7 +1,6 @@
 package rlm
 
 import (
-	"github.com/doxanocap/pkg/tools"
 	"golang.org/x/time/rate"
 	"time"
 )
@@ -18,15 +17,15 @@ func newClient(limiter *rate.Limiter, ip string) *Client {
 	return &Client{
 		ip:            ip,
 		limiter:       limiter,
-		lastSeen:      tools.GetPtr(time.Now()),
-		blockDuration: tools.GetPtr(time.Duration(0)),
+		lastSeen:      ctxholder.GetPtr(time.Now()),
+		blockDuration: ctxholder.GetPtr(time.Duration(0)),
 	}
 }
 
 func (c *Client) BlockDuration() *time.Duration {
 	diff := *c.blockDuration - time.Since(*c.lastSeen)
 	if diff.Milliseconds() > 0 {
-		return tools.GetPtr(diff)
+		return ctxholder.GetPtr(diff)
 	}
 	return nil
 }
