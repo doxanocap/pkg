@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/doxanocap/pkg/env"
-	"github.com/doxanocap/pkg/sandbox/lg"
+	"log"
 )
 
 const (
@@ -24,12 +24,12 @@ func InitConfig[T IConfig]() *T {
 
 	err := env.LoadFile(DefaultEnvPath)
 	if err != nil {
-		lg.Errorf("config: %s", err)
+		log.Printf("error: config: %s", err)
 	}
 
 	err = env.Unmarshal(&config)
 	if err != nil {
-		lg.Fatalf("config: %s", err)
+		log.Fatalf("config: %s", err)
 	}
 
 	return &config

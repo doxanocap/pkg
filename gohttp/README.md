@@ -20,7 +20,7 @@ import (
 	"context"
 	"github.com/doxanocap/pkg/errs"
 	"github.com/doxanocap/pkg/gohttp"
-	"github.com/doxanocap/pkg/sandbox/lg"
+	"log"
 )
 
 func main() {
@@ -33,8 +33,8 @@ func main() {
 		SetRequestFormat(gohttp.FormatJSON).
 		Execute(context.Background())
 	if err != nil {
-		lg.Fatal(err)
+		log.Fatal(err)
 	}
-	lg.Info(res.Status)
+	log.Println(res.Status)
 }
 ```

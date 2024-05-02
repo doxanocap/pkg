@@ -3,9 +3,9 @@ package gohttp
 import (
 	"context"
 	"fmt"
-	"github.com/doxanocap/pkg/sandbox/lg"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"net/http"
 	"testing"
 )
@@ -37,7 +37,7 @@ func Test(t *testing.T) {
 	go func() {
 		err := srv.ListenAndServe()
 		if err != nil {
-			lg.Fatalf("listen: %s\n", err)
+			log.Fatal(fmt.Sprintf("listen: %s\n", err))
 		}
 	}()
 
@@ -47,11 +47,11 @@ func Test(t *testing.T) {
 		SetHeader("TOKEN", "test123456").
 		Execute(ctx)
 	if err != nil {
-		lg.Fatalf("gohttp: %v", err)
+		log.Fatal(fmt.Sprintf("gohttp: %v", err))
 	}
 
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	if err := srv.Shutdown(ctx); err != nil {
-		lg.Fatal("Server Shutdown:", err)
+		log.Fatal(fmt.Sprintf("Server Shutdown: %s", err))
 	}
 }

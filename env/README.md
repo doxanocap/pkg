@@ -30,8 +30,8 @@ TOKEN_ID=4
 package main
 
 import (
-	"github.com/doxanocap/pkg/gohttp"
-	"github.com/doxanocap/pkg/sandbox/lg"
+	"github.com/doxanocap/pkg/env"
+    "log"
 )
 
 type Cfg struct {
@@ -50,15 +50,15 @@ type Token struct {
 func main() {
 	err := env.LoadFile("test.env")
 	if err != nil {
-		lg.Fatal(err)
+		log.Fatal(err)
 	}
 
 	cfg := Cfg{}
 	err = env.Unmarshal(&cfg)
 	if err != nil {
-		lg.Fatal(err)
+		log.Fatal(err)
 	}
 
-	lg.Infof("%v", cfg)
+	log.Printf("%v", cfg)
 }
 ```

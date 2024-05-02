@@ -1,8 +1,8 @@
 package env
 
 import (
-	"github.com/doxanocap/pkg/sandbox/lg"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"testing"
 )
 
@@ -22,17 +22,17 @@ type Token struct {
 func Test(t *testing.T) {
 	err := LoadFile("test.env")
 	if err != nil {
-		lg.Fatal(err)
+		log.Fatal(err)
 	}
 
 	cfg := Cfg{}
 	err = Unmarshal(&cfg)
 	if err != nil {
-		lg.Fatal(err)
+		log.Fatal(err)
 	}
 
 	assert.Equal(t, cfg.Token.ID, 4)
 	assert.Equal(t, cfg.Token.Secret, "secret")
-	lg.Infof("%v", cfg)
+	log.Printf("%v\n", cfg)
 
 }

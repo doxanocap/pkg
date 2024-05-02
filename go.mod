@@ -1,14 +1,12 @@
 module github.com/doxanocap/pkg
 
-go 1.20
+go 1.21
 
 require (
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.9.1
-	github.com/google/uuid v1.3.0
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.21.0
-	golang.org/x/time v0.1.0
 )
 
 require (
