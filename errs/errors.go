@@ -27,9 +27,11 @@ func Wrap(msg string, err error) error {
 
 // WrapIfErr wraps to message if error is not nil
 // better use with defer
-func WrapIfErr(msg string, err error) {
+func WrapIfErr(msg string, err *error) {
 	if err != nil {
-		err = Wrap(msg, err)
+		if *err != nil {
+			*err = Wrap(msg, *err)
+		}
 	}
 }
 
