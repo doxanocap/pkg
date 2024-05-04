@@ -2,35 +2,36 @@ package errs
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
-// SetGinError handles privateError and optional publicError
-// privateErr might be also an HttpError, however if not it just puts error into gin.Ctx
-// Better use to write publicErr if known what privateError is not HttpError type
-func SetGinError(ctx *gin.Context, privateErr error, publicErr ...error) {
-	if privateErr == nil {
+// SetGinError sets error in gin.Context
+// and if it is HttpError, it sets right headers and writes message into body
+// Best use if you are not sure which type of error you are handling
+func SetGinError(ctx *gin.Context, err error) {
+	if err == nil {
 		return
 	}
 
 	// this error will be parsed and logged
-	_ = ctx.Error(privateErr)
+	_ = ctx.Error(err)
 
-	// if private error is also HttpError
-	httpError := UnmarshalError(privateErr)
+	// if error is HttpError
+	httpError := UnmarshalError(err)
 	if httpError.StatusCode != 0 {
 		ctx.JSON(httpError.StatusCode, httpError)
 		return
 	}
+	return
+}
 
+func SetBothErrors(ctx *gin.Context, publicErr *HttpError, privateErr error) {
 	if publicErr == nil {
-		ctx.Status(http.StatusInternalServerError)
 		return
 	}
 
-	// this error will be shown as output
-	httpError = UnmarshalError(publicErr[0])
-	ctx.JSON(httpError.StatusCode, httpError)
+	_ = ctx.Error(privateErr)
+	ctx.JSON(publicErr.StatusCode, publicErr)
+	_ = ctx.Error(publicErr)
 	return
 }
 
@@ -41,25 +42,21 @@ func GetGinPrivateErr(ctx *gin.Context) error {
 	return ctx.Errors[0]
 }
 
-func GetGinPublicErr(ctx *gin.Context) error {
+func GetGinPublicErr(ctx *gin.Context) *HttpError {
 	if ctx.Errors == nil {
 		return nil
 	}
-	httpError := UnmarshalError(ctx.Errors[0])
+	if len(ctx.Errors) == 1 {
+		httpError := UnmarshalError(ctx.Errors[1])
+		if httpError.StatusCode != 0 {
+			return httpError
+		}
+		return nil
+	}
+
+	httpError := UnmarshalError(ctx.Errors[1])
 	if httpError.StatusCode != 0 {
 		return httpError
 	}
-	if len(ctx.Errors) > 1 {
-		return ctx.Errors[1]
-	}
 	return nil
-}
-
-func SetGinErrorWithStatus(ctx *gin.Context, status int, err error) {
-	if err == nil {
-		return
-	}
-	_ = ctx.Error(err)
-	ctx.Status(status)
-	return
 }
