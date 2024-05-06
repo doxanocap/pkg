@@ -36,17 +36,16 @@ func SetBothErrors(ctx *gin.Context, publicErr *HttpError, privateErr error) {
 }
 
 func GetGinPrivateErr(ctx *gin.Context) error {
-	if ctx.Errors == nil {
+	if len(ctx.Errors) == 0 {
 		return nil
 	}
 	return ctx.Errors[0]
 }
 
 func GetGinPublicErr(ctx *gin.Context) *HttpError {
-	if ctx.Errors == nil {
+	if len(ctx.Errors) == 0 {
 		return nil
-	}
-	if len(ctx.Errors) == 1 {
+	} else if len(ctx.Errors) == 1 {
 		httpError := UnmarshalError(ctx.Errors[1])
 		if httpError.StatusCode != 0 {
 			return httpError
@@ -55,8 +54,8 @@ func GetGinPublicErr(ctx *gin.Context) *HttpError {
 	}
 
 	httpError := UnmarshalError(ctx.Errors[1])
-	if httpError.StatusCode != 0 {
-		return httpError
+	if httpError.StatusCode == 0 {
+		return nil
 	}
-	return nil
+	return httpError
 }
