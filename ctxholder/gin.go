@@ -1,86 +1,57 @@
 package ctxholder
 
 import (
-	"context"
-	"sync"
+	"github.com/gin-gonic/gin"
 )
 
 const (
-	ContextHolderKey = "context-holder-key"
-	keyUserId        = "user_id"
-	keyRefreshToken  = "refresh_token"
+	keyUserId       = "user_id"
+	keyRefreshToken = "refresh_token"
 )
 
-func SetKV(ctx context.Context, key string, value interface{}) {
-	if contextHolder, ok := ctx.Value(ContextHolderKey).(*sync.Map); ok {
-		contextHolder.Store(key, value)
+func SetUserID(c *gin.Context, userID string) {
+	c.Set(keyUserId, userID)
+}
+
+func GetUserID(c *gin.Context) string {
+	v, ok := c.Get(keyUserId)
+	if !ok {
+		return ""
 	}
+	return v.(string)
 }
 
-func SetUserID(ctx context.Context, userID string) {
-	SetKV(ctx, keyUserId, userID)
+func SetRefreshToken(c *gin.Context, token string, age int) {
+	c.SetCookie(keyRefreshToken,
+		token,
+		int(age),
+		"/",
+		"localhost",
+		false,
+		true)
+	c.Set(keyRefreshToken, token)
 }
 
-func GetUserID(ctx context.Context) string {
-	value := getAttribute(ctx, keyUserId)
-	if value != nil {
-		if i, ok := value.(string); ok {
-			return i
-		}
+func GetRefreshToken(c *gin.Context) string {
+	v, ok := c.Get(keyRefreshToken)
+	if !ok {
+		return ""
 	}
-	return ""
+	return v.(string)
 }
 
-func SetRefreshToken(ctx context.Context, token string) {
-	SetKV(ctx, keyRefreshToken, token)
-}
-
-func GetRefreshToken(ctx context.Context) string {
-	value := getAttribute(ctx, keyRefreshToken)
-	if value != nil {
-		if i, ok := value.(string); ok {
-			return i
-		}
+func GetIntByKey(c *gin.Context, key string) int {
+	v, ok := c.Get(key)
+	if !ok {
+		return 0
 	}
-	return ""
+	return v.(int)
 }
 
-func GetIntByKey(ctx context.Context, key string) int {
-	value := getAttribute(ctx, key)
-	if value != nil {
-		if i, ok := value.(int); ok {
-			return i
-		}
+func GetStringByKey(c *gin.Context, key string) string {
+	v, ok := c.Get(key)
+	if !ok {
+		return ""
 	}
-	return 0
-}
-
-func GetInt64ByKey(ctx context.Context, key string) int64 {
-	value := getAttribute(ctx, key)
-	if value != nil {
-		if i, ok := value.(int64); ok {
-			return i
-		}
-	}
-	return 0
-}
-
-func GetStringByKey(ctx context.Context, key string) string {
-	value := getAttribute(ctx, key)
-	if value != nil {
-		if i, ok := value.(string); ok {
-			return i
-		}
-	}
-	return ""
-}
-
-func getAttribute(ctx context.Context, key string) interface{} {
-	if contextHolder, ok := ctx.Value(ContextHolderKey).(*sync.Map); ok {
-		value, ok := contextHolder.Load(key)
-		if ok {
-			return value
-		}
-	}
-	return nil
+	return v.(string)
 }
