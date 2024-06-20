@@ -13,7 +13,7 @@ const (
 	keyModule  = "module"
 )
 
-type Logger struct {
+type SlogLogger struct {
 	log    *slog.Logger
 	module string
 }
@@ -29,7 +29,7 @@ type Logger struct {
 //	}
 //}
 
-func InitLogger(env string) *Logger {
+func InitSlogLogger(env string) *Logger {
 	var handler slog.Handler
 	if env == config.EnvDevelopment {
 		handler = slog.NewTextHandler(os.Stdout, nil)
