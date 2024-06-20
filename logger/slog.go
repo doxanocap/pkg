@@ -29,7 +29,7 @@ type SlogLogger struct {
 //	}
 //}
 
-func InitSlogLogger(env string) *Logger {
+func InitSlogLogger(env string) *SlogLogger {
 	var handler slog.Handler
 	if env == config.EnvDevelopment {
 		handler = slog.NewTextHandler(os.Stdout, nil)
@@ -37,19 +37,19 @@ func InitSlogLogger(env string) *Logger {
 		handler = slog.NewJSONHandler(os.Stdout, nil)
 	}
 
-	return &Logger{
+	return &SlogLogger{
 		log: slog.New(handler),
 	}
 }
 
-func (l *Logger) WithModule(module string) *Logger {
-	return &Logger{
+func (l *SlogLogger) WithModule(module string) *SlogLogger {
+	return &SlogLogger{
 		log:    l.log,
 		module: fmt.Sprintf("%s[%s]", l.module, module),
 	}
 }
 
-func (l *Logger) Info(msg string, args ...slog.Attr) {
+func (l *SlogLogger) Info(msg string, args ...slog.Attr) {
 	attrs := []slog.Attr{{Key: keyPayload, Value: slog.GroupValue(args...)}}
 	if l.module != "" {
 		attrs = append(attrs, slog.String(keyModule, l.module))
