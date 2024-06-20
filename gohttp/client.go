@@ -163,7 +163,6 @@ func (c *Core) generateRequest(ctx context.Context) (*http.Request, error) {
 	if err != nil {
 		return nil, errs.Wrap("create request: %v", err)
 	}
-
 	c.setHeaders(request)
 	c.setContentType(request)
 	return request, nil

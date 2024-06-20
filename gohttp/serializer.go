@@ -27,7 +27,6 @@ func decodeResponseBody(responseBody io.Reader, format FormatType, dst interface
 		if err != nil {
 			return errs.Wrap("reading response body: %v", err)
 		}
-
 		return json.Unmarshal(raw, dst)
 	}
 	return nil

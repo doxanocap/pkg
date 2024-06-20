@@ -1,34 +1,62 @@
 package logger
 
 import (
+	"context"
+	"fmt"
 	"github.com/doxanocap/pkg/config"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"log/slog"
 	"os"
 )
 
+const (
+	keyPayload = "payload"
+	keyModule  = "module"
+)
+
 type Logger struct {
-	log *zap.Logger
+	log    *slog.Logger
+	module string
 }
 
-func InitLogger[C config.IConfig](cfg *C) *zap.Logger {
-	writer := zapcore.Lock(os.Stdout)
-	encoder := getEncoder(cfg)
-	core := zapcore.NewCore(encoder, writer, zapcore.DebugLevel)
-	return zap.New(core)
-}
+//{
+//	"time":"2024-05-20T14:11:29.7812801+05:00",
+//	"level":"ERROR",
+//	"msg":"unable to unmarshal",
+//	"module": "[REPOSITORY][USER_CACHE]",
+//	"payload": {
+//		"msg_id": "312de-423f3j-ew4043-wf43",
+//		"send_to": 325,
+//	}
+//}
 
-func getEncoder[C config.IConfig](cfg *C) zapcore.Encoder {
-	encoderConfig := zapcore.EncoderConfig{}
-	if (*cfg).Env() == config.EnvProduction {
-		encoderConfig = zap.NewProductionEncoderConfig()
+func InitLogger(env string) *Logger {
+	var handler slog.Handler
+	if env == config.EnvDevelopment {
+		handler = slog.NewTextHandler(os.Stdout, nil)
+	} else {
+		handler = slog.NewJSONHandler(os.Stdout, nil)
 	}
 
-	encoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder
-	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	encoderConfig.TimeKey = "time"
-	encoderConfig.LevelKey = "level"
-	encoderConfig.MessageKey = "message"
+	return &Logger{
+		log: slog.New(handler),
+	}
+}
 
-	return zapcore.NewJSONEncoder(encoderConfig)
+func (l *Logger) WithModule(module string) *Logger {
+	return &Logger{
+		log:    l.log,
+		module: fmt.Sprintf("%s[%s]", l.module, module),
+	}
+}
+
+func (l *Logger) Info(msg string, args ...slog.Attr) {
+	attrs := []slog.Attr{{Key: keyPayload, Value: slog.GroupValue(args...)}}
+	if l.module != "" {
+		attrs = append(attrs, slog.String(keyModule, l.module))
+	}
+
+	l.log.LogAttrs(context.Background(),
+		slog.LevelInfo,
+		msg,
+		attrs...)
 }
