@@ -24,11 +24,11 @@ func LoadFile(filePath string) error {
 		}
 
 		vars := strings.Split(line, "=")
-		if len(vars) != 2 {
+		if len(vars) < 2 {
 			return fmt.Errorf("scanning line %d: invalid format", i)
 		}
 		key := vars[0]
-		value := removeBrackets(vars[1])
+		value := removeBrackets(line[len(key)+1:])
 
 		temp := os.Getenv(key)
 		if temp != "" && priority == 1 {
@@ -100,7 +100,7 @@ func Unmarshal(cfg interface{}) error {
 		case isIntegerType(kind):
 			n, err := strconv.Atoi(value)
 			if err != nil {
-				return fmt.Errorf("unmarshal: parsed value by key: %s", key)
+				return fmt.Errorf("unmarshal: parsed value by key: %s: %v", key, err)
 			}
 			fieldValue.SetInt(int64(n))
 		case kind == reflect.String:

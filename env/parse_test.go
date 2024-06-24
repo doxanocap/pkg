@@ -9,6 +9,7 @@ import (
 type Cfg struct {
 	Name     string `env:"NAME"`
 	Password string `env:"PASSWORD"`
+	PgDsn    string `env:"PG_DSN"`
 
 	Token
 }
