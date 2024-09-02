@@ -7,11 +7,7 @@ import (
 	"os"
 )
 
-type Logger struct {
-	log *zap.Logger
-}
-
-func InitLogger[C config.IConfig](cfg *C) *zap.Logger {
+func InitZapLogger[C config.IConfig](cfg *C) *zap.Logger {
 	writer := zapcore.Lock(os.Stdout)
 	encoder := getEncoder(cfg)
 	core := zapcore.NewCore(encoder, writer, zapcore.DebugLevel)
